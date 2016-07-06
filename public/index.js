@@ -22,6 +22,7 @@ function createNameBox() {
     }
   });
   document.body.appendChild(input);
+  return input;
 }
 
 function drawBox(context, x, y, rotation = 0) {
@@ -103,17 +104,18 @@ function init() {
   var context = createCanvas();
   context.fillText('Enter your name in the input box below', 7, 75);
   context.fillText('Press SPACEBAR to start and to jump', 7, 95);
+  var input = createNameBox();
   addEventListener('keydown', function jump(e) {
     if (e.keyCode === SPACEBAR) {
       if (gameover) {
         gameover = false;
         update({box: createBox(), context: context, pipes: [generatePipe()], score: 0});
+        input.value = input.value.trim(); // if the user was focused on the input box and pressed space to start the game
       } else {
         jumped = true;
       }
     }
   });
-  createNameBox();
 }
 
 init();
