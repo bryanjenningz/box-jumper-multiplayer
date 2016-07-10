@@ -25,6 +25,10 @@ socket.on('disconnected player', (id) => {
   store.dispatch({type: 'DISCONNECT', id})
 })
 
+socket.on('update player order', (idsToOrder) => {
+  store.dispatch({type: 'UPDATE_PLAYER_ORDER', idsToOrder})
+})
+
 class View extends React.Component {
   render() {
     var state = store.getState()
@@ -58,7 +62,7 @@ class Player extends React.Component {
       <div
         style={{
           position: 'absolute',
-          left: state.x + 'px',
+          left: (state.x * (state.order + 1)) + 'px',
           top: state.y + 'px',
           width: '25px',
           height: '25px',
@@ -137,7 +141,7 @@ class Pipe extends React.Component {
 function reducer(state, action) {
   if (state === undefined) {
     return {
-      yourPlayer: {x: 30, y: 50, vx: 1, vy: 0, jump: false},
+      yourPlayer: {x: 30, y: 50, vx: 1, vy: 0, jump: false, order: 0},
       players: [],
       pipes: [{x: 100, y: 50}],
       time: 0
@@ -174,6 +178,14 @@ function reducer(state, action) {
 
     case 'DISCONNECT':
       return Object.assign({}, state, {players: state.players.filter(p => p.id !== action.id)})
+
+    case 'UPDATE_PLAYER_ORDER':
+      return Object.assign({}, state, {
+        yourPlayer: Object.assign({}, state.yourPlayer, {order: action.idsToOrder[state.yourPlayer.id]}),
+        players: state.players.map(player => {
+          return Object.assign({}, player, {order: action.idsToOrder[player.id]})
+        })
+      })
   }
 }
 
