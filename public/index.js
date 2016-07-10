@@ -21,6 +21,10 @@ socket.on('update player', (player) => {
   store.dispatch({type: 'UPDATE_PLAYER', player})
 })
 
+socket.on('disconnected player', (id) => {
+  store.dispatch({type: 'DISCONNECT', id})
+})
+
 class View extends React.Component {
   render() {
     var state = store.getState()
@@ -167,6 +171,9 @@ function reducer(state, action) {
         newState.players.push(action.player)
       }
       return newState
+
+    case 'DISCONNECT':
+      return Object.assign({}, state, {players: state.players.filter(p => p.id !== action.id)})
   }
 }
 
