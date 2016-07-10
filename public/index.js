@@ -140,7 +140,7 @@ function reducer(state, action) {
 
 function updatePlayer(state, action) {
   const vy = state.jump ? globals.jumpVelocity : state.vy + globals.gravity
-  const y = vy + state.y
+  const y = Math.max(0, Math.min(vy + state.y, 100 * globals.gameWidthScalar - 25))
   return Object.assign({}, state, {y, vy, jump: false})
 }
 
