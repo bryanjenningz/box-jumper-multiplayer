@@ -15,10 +15,10 @@ class View extends React.Component {
     var state = store.getState()
     return (
       <div>
-        <div>x: {state.players[0].x}</div>
+        {/*<div>x: {state.players[0].x}</div>
         <div>y: {state.players[0].y}</div>
         <div>vx: {state.players[0].vx}</div>
-        <div>vy: {state.players[0].vy}</div>
+        <div>vy: {state.players[0].vy}</div>*/}
 
         <div
           style={{
@@ -63,38 +63,45 @@ class Pipes extends React.Component {
     return (
       <div style={{position: 'relative'}}>
         {pipes.map((pipe, i) => {
-          return (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                left: globals.gameWidthScalar * pipe.x + 'px',
-                top: '0px',
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  left: '0px',
-                  top: '0px',
-                  width: '25px',
-                  height: '70px',
-                  backgroundColor: 'black',
-                }}
-              ></div>
-              <div
-                style={{
-                  position: 'absolute',
-                  left: '0px',
-                  top: '140px',
-                  width: '25px',
-                  height: '160px',
-                  backgroundColor: 'black',
-                }}
-              ></div>
-            </div>
-          )
+          return <Pipe key={i} pipe={pipe} />
         })}
+      </div>
+    )
+  }
+}
+
+class Pipe extends React.Component {
+  render() {
+    var pipe = this.props.pipe
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          left: globals.gameWidthScalar * pipe.x + 'px',
+          top: '0px',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: '0px',
+            top: '0px',
+            width: '25px',
+            height: '70px',
+            backgroundColor: 'black',
+          }}
+        ></div>
+        <div
+          style={{
+            position: 'absolute',
+            left: '0px',
+            top: '140px',
+            width: '25px',
+            height: '160px',
+            backgroundColor: 'black',
+          }}
+        ></div>
       </div>
     )
   }
