@@ -1,8 +1,6 @@
 const rootEl = document.querySelector('#root')
 const store = Redux.createStore(reducer)
-const keys = {
-  space: 32
-}
+const keys = {space: 32}
 const globals = {
   gravity: 0.15,
   jumpVelocity: -3,
@@ -106,62 +104,30 @@ class Pipes extends React.Component {
 function reducer(state, action) {
   if (state === undefined) {
     return {
-      players: [
-        {
-          x: 30,
-          y: 50,
-          vx: 1,
-          vy: 0,
-          jump: false,
-        }
-      ],
-      pipes: [
-        {
-          x: 100,
-          y: 50,
-        }
-      ],
+      players: [{x: 30, y: 50, vx: 1, vy: 0, jump: false}],
+      pipes: [{x: 100, y: 50}],
       time: 0
     }
   }
 
   switch (action.type) {
     case 'TICK':
-      const players = state.players.map(
-        playerState => updatePlayer(playerState, action)
-      )
+      const players = state.players.map(playerState => updatePlayer(playerState, action))
       const pipes = updatePipes(state.pipes, action)
-      return Object.assign({}, state, {
-        players,
-        pipes,
-        time: action.time,
-      })
+      return Object.assign({}, state, {players, pipes, time: action.time})
 
     case 'JUMP':
       return Object.assign({}, state, {
-        players: [
-          Object.assign({}, state.players[0], {
-            jump: true
-          })
-        ]
+        players: [Object.assign({}, state.players[0], {jump: true})]
       })
   }
 }
 
-
 function updatePlayer(state, action) {
-  const vy = state.jump ?
-    globals.jumpVelocity :
-    state.vy + globals.gravity
+  const vy = state.jump ? globals.jumpVelocity : state.vy + globals.gravity
   const y = vy + state.y
-
-  return Object.assign({}, state, {
-    y,
-    vy,
-    jump: false
-  })
+  return Object.assign({}, state, {y, vy, jump: false})
 }
-
 
 function updatePipes(state, action) {
   var generatePipe = () => ({x: 100, y: 30 + 40 * Math.random()})
@@ -171,36 +137,21 @@ function updatePipes(state, action) {
   return addPipeIfNecessary(state.filter(isVisible).map(updateLocation))
 }
 
-
 function init() {
-  function startListeners(store) {
-    function tick() {
-      store.dispatch({
-        type: 'TICK',
-        time: new Date().getTime()
-      })
+  var startListeners = () => {
+    var tick = () => {
+      store.dispatch({type: 'TICK', time: new Date().getTime()})
       requestAnimationFrame(tick)
     }
-
-    function jump() {
-      store.dispatch({
-        type: 'JUMP'
-      })
-    }
+    var jump = () => store.dispatch({type: 'JUMP'})
+    var jumpIfSpacePressed = (e) => e.keyCode === keys.space && jump()
 
     tick()
-    window.addEventListener('keydown', (e) => {
-      if (e.keyCode === keys.space) {
-        jump()
-      }
-    })
+    addEventListener('keydown', jumpIfSpacePressed)
   }
+  var render = () => ReactDOM.render(<View />, rootEl)
 
-  function render() {
-    ReactDOM.render(<View />, rootEl)
-  }
-
-  startListeners(store)
+  startListeners()
   store.subscribe(render)
 }
 
