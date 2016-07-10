@@ -9,6 +9,17 @@ const globals = {
   gameWidthScalar: 3,
   pipeWidth: 25,
 }
+var socket = io()
+
+function sendPlayerState() {
+  if (socket && socket.id) {
+    socket.emit('update player', store.getState().yourPlayer)
+  }
+}
+
+socket.on('update player', (player) => {
+  store.dispatch({type: 'UPDATE_PLAYER', player})
+})
 
 class View extends React.Component {
   render() {
@@ -24,7 +35,10 @@ class View extends React.Component {
             border: '2px solid black'
           }}
         >
-          <Player />
+          <Player state={state.yourPlayer} />
+          {state.players.map((player, i) => {
+            return <Player state={player} key={i} />
+          })}
           <Pipes />
         </div>
       </div>
@@ -35,13 +49,13 @@ class View extends React.Component {
 
 class Player extends React.Component {
   render() {
-    var state = store.getState()
+    var state = this.props.state
     return (
       <div
         style={{
           position: 'absolute',
-          left: state.players[0].x + 'px',
-          top: state.players[0].y + 'px',
+          left: state.x + 'px',
+          top: state.y + 'px',
           width: '25px',
           height: '25px',
           backgroundColor: 'black'
@@ -119,22 +133,40 @@ class Pipe extends React.Component {
 function reducer(state, action) {
   if (state === undefined) {
     return {
-      players: [{x: 30, y: 50, vx: 1, vy: 0, jump: false}],
+      yourPlayer: {x: 30, y: 50, vx: 1, vy: 0, jump: false},
+      players: [],
       pipes: [{x: 100, y: 50}],
       time: 0
     }
   }
 
   switch (action.type) {
+    // Only update your player on 'TICK' because other players will be updated with 'UPDATE_PLAYER'
     case 'TICK':
-      const players = state.players.map(playerState => updatePlayer(playerState, action))
+      const yourPlayer = updatePlayer(state.yourPlayer, action)
       const pipes = updatePipes(state.pipes, action)
-      return Object.assign({}, state, {players, pipes, time: action.time})
+      return Object.assign({}, state, {pipes, yourPlayer, time: action.time})
 
     case 'JUMP':
       return Object.assign({}, state, {
-        players: [Object.assign({}, state.players[0], {jump: true})]
+        yourPlayer: Object.assign({}, state.yourPlayer, {jump: true})
       })
+
+    case 'UPDATE_PLAYER':
+      var playerInPlayers = false
+      var newState = Object.assign({}, state, {
+        players: state.players.map(player => {
+          if (action.player.id === player.id) {
+            playerInPlayers = true
+            return action.player
+          }
+          return player
+        })
+      })
+      if (!playerInPlayers && action.player.id !== socket.id) {
+        newState.players.push(action.player)
+      }
+      return newState
   }
 }
 
@@ -156,6 +188,7 @@ function init() {
   var startListeners = () => {
     var tick = () => {
       store.dispatch({type: 'TICK', time: new Date().getTime()})
+      sendPlayerState()
       requestAnimationFrame(tick)
     }
     var jump = () => store.dispatch({type: 'JUMP'})
