@@ -13,13 +13,9 @@ const globals = {
 class View extends React.Component {
   render() {
     var state = store.getState()
+
     return (
       <div>
-        {/*<div>x: {state.players[0].x}</div>
-        <div>y: {state.players[0].y}</div>
-        <div>vx: {state.players[0].vx}</div>
-        <div>vy: {state.players[0].vy}</div>*/}
-
         <div
           style={{
             position: 'relative',
@@ -74,11 +70,23 @@ class Pipe extends React.Component {
   render() {
     var pipe = this.props.pipe
 
+    // Hacky solution to fix the width so that it never overflows out of the boundary.
+    var width
+    if (pipe.x < 0) {
+      width = globals.pipeWidth + (globals.gameWidthScalar * pipe.x)
+    } else if (pipe.x + (globals.pipeWidth / globals.gameWidthScalar) > 100) {
+      var rightSide = globals.pipeWidth + (pipe.x * globals.gameWidthScalar)
+      var overflowingWidth = rightSide - (globals.gameWidthScalar * 100)
+      width = globals.pipeWidth - overflowingWidth
+    } else {
+      width = globals.pipeWidth
+    }
+
     return (
       <div
         style={{
           position: 'absolute',
-          left: globals.gameWidthScalar * pipe.x + 'px',
+          left: globals.gameWidthScalar * Math.max(0, pipe.x) + 'px',
           top: '0px',
         }}
       >
@@ -87,7 +95,7 @@ class Pipe extends React.Component {
             position: 'absolute',
             left: '0px',
             top: '0px',
-            width: '25px',
+            width,
             height: '70px',
             backgroundColor: 'black',
           }}
@@ -97,7 +105,7 @@ class Pipe extends React.Component {
             position: 'absolute',
             left: '0px',
             top: '140px',
-            width: '25px',
+            width,
             height: '160px',
             backgroundColor: 'black',
           }}
