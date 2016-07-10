@@ -96,7 +96,7 @@ class Pipe extends React.Component {
             left: '0px',
             top: '0px',
             width,
-            height: '70px',
+            height: (pipe.y * globals.gameWidthScalar) + 'px',
             backgroundColor: 'black',
           }}
         ></div>
@@ -104,9 +104,9 @@ class Pipe extends React.Component {
           style={{
             position: 'absolute',
             left: '0px',
-            top: '140px',
+            top: (pipe.y * globals.gameWidthScalar + 70) + 'px',
             width,
-            height: '160px',
+            height: (globals.gameWidthScalar * 100 - (pipe.y * globals.gameWidthScalar + 70)) + 'px',
             backgroundColor: 'black',
           }}
         ></div>
