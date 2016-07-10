@@ -6,7 +6,10 @@ const keys = {
 const globals = {
   gravity: 0.15,
   jumpVelocity: -3,
-  xVelocity: 3
+  xVelocity: .66,
+  pipeSpacingX: 60,
+  gameWidthScalar: 3,
+  pipeWidth: 25,
 }
 
 class View extends React.Component {
@@ -28,7 +31,7 @@ class View extends React.Component {
           }}
         >
           <Player />
-          <Pipe />
+          <Pipes />
         </div>
       </div>
     )
@@ -55,36 +58,45 @@ class Player extends React.Component {
 }
 
 
-class Pipe extends React.Component {
+class Pipes extends React.Component {
   render() {
-    var state = store.getState()
+    var pipes = store.getState().pipes
+
     return (
-      <div
-        style={{
-          position: 'absolute',
-          left: '200px',
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            left: '0px',
-            top: '0px',
-            width: '25px',
-            height: '70px',
-            backgroundColor: 'black',
-          }}
-        ></div>
-        <div
-          style={{
-            position: 'absolute',
-            left: '0px',
-            top: '140px',
-            width: '25px',
-            height: '160px',
-            backgroundColor: 'black',
-          }}
-        ></div>
+      <div style={{position: 'relative'}}>
+        {pipes.map((pipe, i) => {
+          return (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                left: globals.gameWidthScalar * pipe.x + 'px',
+                top: '0px',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '0px',
+                  top: '0px',
+                  width: '25px',
+                  height: '70px',
+                  backgroundColor: 'black',
+                }}
+              ></div>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '0px',
+                  top: '140px',
+                  width: '25px',
+                  height: '160px',
+                  backgroundColor: 'black',
+                }}
+              ></div>
+            </div>
+          )
+        })}
       </div>
     )
   }
@@ -100,7 +112,13 @@ function reducer(state, action) {
           y: 50,
           vx: 1,
           vy: 0,
-          jump: false
+          jump: false,
+        }
+      ],
+      pipes: [
+        {
+          x: 100,
+          y: 50,
         }
       ],
       time: 0
@@ -112,8 +130,10 @@ function reducer(state, action) {
       const players = state.players.map(
         playerState => updatePlayer(playerState, action)
       )
+      const pipes = updatePipes(state.pipes, action)
       return Object.assign({}, state, {
         players,
+        pipes,
         time: action.time,
       })
 
@@ -144,38 +164,42 @@ function updatePlayer(state, action) {
 
 
 function updatePipes(state, action) {
+  var generatePipe = () => ({x: 100, y: 30 + 40 * Math.random()})
+  var isVisible = (pipe) => pipe.x > -globals.pipeWidth
+  var updateLocation = (pipe) => Object.assign({}, pipe, {x: pipe.x - globals.xVelocity})
+  var addPipeIfNecessary = (pipes) => (pipes.length === 1 && pipes[0].x <= 40) ? pipes.concat(generatePipe()) : pipes
+  return addPipeIfNecessary(state.filter(isVisible).map(updateLocation))
 }
 
-
-function startListeners(store) {
-  function tick() {
-    store.dispatch({
-      type: 'TICK',
-      time: new Date().getTime()
-    })
-    requestAnimationFrame(tick)
-  }
-
-  function jump() {
-    store.dispatch({
-      type: 'JUMP'
-    })
-  }
-
-  tick()
-  window.addEventListener('keydown', (e) => {
-    if (e.keyCode === keys.space) {
-      jump()
-    }
-  })
-}
-
-
-function render() {
-  ReactDOM.render(<View />, rootEl)
-}
 
 function init() {
+  function startListeners(store) {
+    function tick() {
+      store.dispatch({
+        type: 'TICK',
+        time: new Date().getTime()
+      })
+      requestAnimationFrame(tick)
+    }
+
+    function jump() {
+      store.dispatch({
+        type: 'JUMP'
+      })
+    }
+
+    tick()
+    window.addEventListener('keydown', (e) => {
+      if (e.keyCode === keys.space) {
+        jump()
+      }
+    })
+  }
+
+  function render() {
+    ReactDOM.render(<View />, rootEl)
+  }
+
   startListeners(store)
   store.subscribe(render)
 }
