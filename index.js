@@ -29,7 +29,7 @@ io.on('connection', (socket) => {
   })
 })
 
-var port = process.env.port || 9000
+var port = process.env.PORT || 9000
 http.listen(port, () => {
   console.log('Listening on port ' + port)
 })
