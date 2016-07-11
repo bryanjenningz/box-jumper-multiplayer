@@ -7,8 +7,6 @@ app.use(express.static(__dirname + '/public'))
 
 var playerIds = []
 
-
-
 io.on('connection', (socket) => {
   function updatePlayerOrder(ids) {
     var idsToOrder = {}
@@ -31,4 +29,7 @@ io.on('connection', (socket) => {
   })
 })
 
-http.listen(9000, () => {})
+var port = process.env.port || 9000
+http.listen(port, () => {
+  console.log('Listening on port ' + port)
+})
